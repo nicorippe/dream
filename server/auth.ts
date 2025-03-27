@@ -18,11 +18,13 @@ export function setupAuth(app: Express) {
   app.use(
     session({
       secret: process.env.SESSION_SECRET || "nashihub-secret",
-      resave: false,
-      saveUninitialized: false,
+      resave: true,
+      saveUninitialized: true,
       cookie: { 
         maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
-        secure: process.env.NODE_ENV === "production"
+        secure: false, // Set to false to work on Replit's environment
+        httpOnly: true,
+        sameSite: 'lax'
       },
       store: new MemoryStoreSession({
         checkPeriod: 86400000 // prune expired entries every 24h
@@ -36,14 +38,18 @@ export function setupAuth(app: Express) {
   
   // Configure Passport serialization/deserialization
   passport.serializeUser((user: any, done) => {
+    console.log("Serializing user:", user);
     done(null, user.id);
   });
   
   passport.deserializeUser(async (id: number, done) => {
     try {
+      console.log("Deserializing user with ID:", id);
       const user = await storage.getUser(id);
+      console.log("Deserialized user:", user);
       done(null, user);
     } catch (err) {
+      console.error("Error deserializing user:", err);
       done(err, null);
     }
   });
@@ -111,9 +117,16 @@ function setupAuthRoutes(app: Express) {
     passport.authenticate("discord", {
       failureRedirect: "/?auth=failed"
     }),
-    (_, res) => {
-      // Successful authentication, redirect to dashboard
-      res.redirect("/dashboard");
+    (req, res) => {
+      // Log authentication state
+      console.log("Authentication successful, isAuthenticated:", req.isAuthenticated());
+      console.log("User:", req.user);
+      
+      // Successful authentication, redirect to dashboard after a short delay
+      // to make sure the session is properly saved
+      setTimeout(() => {
+        res.redirect("/dashboard");
+      }, 500);
     }
   );
   
