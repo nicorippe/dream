@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 import { DiscordApiResponse, DiscordApiError } from "@/types/discord";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,8 +17,20 @@ export default function DiscordUserLookup() {
     string
   >({
     mutationFn: async (id: string) => {
-      const response = await apiRequest("GET", `/api/discord/users/${id}`, undefined);
-      return response.json();
+      const response = await fetch(`/api/discord/users/${id}`, {
+        method: "GET",
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw {
+          message: errorData.message || "Failed to fetch Discord user",
+          code: errorData.code
+        };
+      }
+      
+      return await response.json();
     },
   });
 
