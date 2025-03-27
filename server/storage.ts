@@ -1,12 +1,12 @@
 import { users, type User, type InsertUser } from "@shared/schema";
 
-// modify the interface with any CRUD methods
-// you might need
-
+// Interface with CRUD methods needed for the application
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByDiscordId(discordId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(user: User): Promise<User>;
 }
 
 export class MemStorage implements IStorage {
@@ -28,6 +28,12 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async getUserByDiscordId(discordId: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.discordId === discordId,
+    );
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentId++;
     const createdAt = new Date();
@@ -42,6 +48,15 @@ export class MemStorage implements IStorage {
     };
     this.users.set(id, user);
     return user;
+  }
+
+  async updateUser(updatedUser: User): Promise<User> {
+    if (!this.users.has(updatedUser.id)) {
+      throw new Error(`User with ID ${updatedUser.id} not found`);
+    }
+    
+    this.users.set(updatedUser.id, updatedUser);
+    return updatedUser;
   }
 }
 

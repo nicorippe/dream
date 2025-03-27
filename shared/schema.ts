@@ -23,6 +23,8 @@ export const discordUserSchema = z.object({
   system: z.boolean().optional(),
   banner: z.string().nullable().optional(),
   accent_color: z.number().nullable().optional(),
+  created_at: z.string().optional(),
+  account_age: z.string().optional(),
 });
 
 // Session schema for auth

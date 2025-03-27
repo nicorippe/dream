@@ -1,12 +1,42 @@
-import { Link } from "wouter";
+import { Link, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function LandingPage() {
+  // Check if auth error is in URL
+  const [isAuthRequired] = useRoute("/?auth=required");
+  const [isAuthFailed] = useRoute("/?auth=failed");
+  const { isLoggedIn } = useAuth();
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1">
+        {isAuthRequired && (
+          <div className="container px-4 md:px-6 pt-4">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Devi effettuare il login con Discord per accedere alla dashboard.
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+        
+        {isAuthFailed && (
+          <div className="container px-4 md:px-6 pt-4">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Autenticazione fallita. Riprova più tardi.
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+        
         <section className="py-12 md:py-20 lg:py-32">
           <div className="container px-4 md:px-6">
             <div className="grid gap-10 lg:grid-cols-2 lg:gap-16 items-center">
@@ -18,11 +48,19 @@ export default function LandingPage() {
                   Scopri profili Discord casuali con la nostra Egirl Roulette o cerca utenti specifici tramite ID.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Link href="/dashboard">
-                    <Button className="btn-gradient" size="lg">
-                      Vai alla Dashboard
-                    </Button>
-                  </Link>
+                  {isLoggedIn ? (
+                    <Link href="/dashboard">
+                      <Button className="btn-gradient" size="lg">
+                        Vai alla Dashboard
+                      </Button>
+                    </Link>
+                  ) : (
+                    <a href="/api/auth/discord">
+                      <Button className="btn-gradient" size="lg">
+                        Login con Discord
+                      </Button>
+                    </a>
+                  )}
                 </div>
               </div>
               <div className="lg:order-last rounded-lg overflow-hidden">
