@@ -7,6 +7,8 @@ export interface IStorage {
   getUserByDiscordId(discordId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(user: User): Promise<User>;
+  addToHistory(userId: number, type: 'lookup' | 'roulette' | 'friend', discordId: string): Promise<User>;
+  getHistory(userId: number, type: 'lookup' | 'roulette' | 'friend'): Promise<string[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -44,7 +46,10 @@ export class MemStorage implements IStorage {
       avatar: insertUser.avatar || null,
       accessToken: insertUser.accessToken || null,
       refreshToken: insertUser.refreshToken || null,
-      tokenExpires: insertUser.tokenExpires || null
+      tokenExpires: insertUser.tokenExpires || null,
+      lookupHistory: [],
+      rouletteHistory: [],
+      friendHistory: []
     };
     this.users.set(id, user);
     return user;
@@ -57,6 +62,48 @@ export class MemStorage implements IStorage {
     
     this.users.set(updatedUser.id, updatedUser);
     return updatedUser;
+  }
+  
+  async addToHistory(userId: number, type: 'lookup' | 'roulette' | 'friend', discordId: string): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+    
+    // Initialize history arrays if they don't exist
+    if (!user.lookupHistory) user.lookupHistory = [];
+    if (!user.rouletteHistory) user.rouletteHistory = [];
+    if (!user.friendHistory) user.friendHistory = [];
+    
+    // Add to the appropriate history
+    if (type === 'lookup') {
+      user.lookupHistory.unshift(discordId);
+    } else if (type === 'roulette') {
+      user.rouletteHistory.unshift(discordId);
+    } else if (type === 'friend') {
+      user.friendHistory.unshift(discordId);
+    }
+    
+    // Update the user
+    return this.updateUser(user);
+  }
+  
+  async getHistory(userId: number, type: 'lookup' | 'roulette' | 'friend'): Promise<string[]> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+    
+    // Return the appropriate history
+    if (type === 'lookup') {
+      return user.lookupHistory || [];
+    } else if (type === 'roulette') {
+      return user.rouletteHistory || [];
+    } else if (type === 'friend') {
+      return user.friendHistory || [];
+    }
+    
+    return [];
   }
 }
 

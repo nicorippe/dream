@@ -147,7 +147,10 @@ function setupAuthRoutes(app: Express) {
           id: user.id,
           discordId: user.discordId,
           username: user.username,
-          avatar: user.avatar
+          avatar: user.avatar,
+          lookupHistory: user.lookupHistory || [],
+          rouletteHistory: user.rouletteHistory || [],
+          friendHistory: user.friendHistory || []
         }
       });
     } else {

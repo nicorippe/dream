@@ -11,6 +11,10 @@ export const users = pgTable("users", {
   refreshToken: text("refresh_token"),
   tokenExpires: timestamp("token_expires"),
   createdAt: timestamp("created_at").defaultNow(),
+  // Add history fields
+  lookupHistory: text("lookup_history").array(),
+  rouletteHistory: text("roulette_history").array(),
+  friendHistory: text("friend_history").array(),
 });
 
 // Discord user schema for API responses
@@ -34,6 +38,9 @@ export const sessionSchema = z.object({
     discordId: z.string(),
     username: z.string(),
     avatar: z.string().nullable(),
+    lookupHistory: z.array(z.string()).optional(),
+    rouletteHistory: z.array(z.string()).optional(),
+    friendHistory: z.array(z.string()).optional(),
   }).optional(),
   isLoggedIn: z.boolean().default(false),
 });
@@ -48,6 +55,9 @@ export type User = {
   refreshToken: string | null;
   tokenExpires: Date | null;
   createdAt: Date | null;
+  lookupHistory?: string[];
+  rouletteHistory?: string[];
+  friendHistory?: string[];
 };
 
 // Custom InsertUser type
