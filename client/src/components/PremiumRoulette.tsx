@@ -20,7 +20,7 @@ export default function PremiumRoulette() {
   const [createdAt, setCreatedAt] = useState("");
   const [accountAge, setAccountAge] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [filterYear, setFilterYear] = useState<string>("");
+  const [filterYear, setFilterYear] = useState<string>("any");
   const [filterNitro, setFilterNitro] = useState(false);
   const [rollsAvailable, setRollsAvailable] = useState(true);
   
@@ -104,7 +104,7 @@ export default function PremiumRoulette() {
       
       // Then roll for a user
       const params = new URLSearchParams();
-      if (filterYear) params.append("year", filterYear);
+      if (filterYear && filterYear !== "any") params.append("year", filterYear);
       if (filterNitro) params.append("nitro", "true");
       
       const url = `/api/discord/roulette?${params.toString()}`;
@@ -148,7 +148,7 @@ export default function PremiumRoulette() {
   };
   
   const resetFilters = () => {
-    setFilterYear("");
+    setFilterYear("any");
     setFilterNitro(false);
   };
   
@@ -176,7 +176,7 @@ export default function PremiumRoulette() {
                 size="sm"
                 onClick={resetFilters}
                 className="flex items-center"
-                disabled={!filterYear && !filterNitro}
+                disabled={(filterYear === "any" || !filterYear) && !filterNitro}
               >
                 <RefreshCw className="mr-1 h-4 w-4" />
                 Reset
@@ -197,7 +197,7 @@ export default function PremiumRoulette() {
                     <SelectValue placeholder="Any year" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any year</SelectItem>
+                    <SelectItem value="any">Any year</SelectItem>
                     {availableYears.map((year) => (
                       <SelectItem key={year} value={year}>
                         {year}
