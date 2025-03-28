@@ -21,7 +21,6 @@ export default function PremiumRoulette() {
   const [accountAge, setAccountAge] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filterYear, setFilterYear] = useState<string>("any");
-  const [filterNitro, setFilterNitro] = useState(false);
   const [rollsAvailable, setRollsAvailable] = useState(true);
   
   // Balance management
@@ -105,7 +104,6 @@ export default function PremiumRoulette() {
       // Then roll for a user
       const params = new URLSearchParams();
       if (filterYear && filterYear !== "any") params.append("year", filterYear);
-      if (filterNitro) params.append("nitro", "true");
       
       const url = `/api/discord/roulette?${params.toString()}`;
       const response = await fetch(url);
@@ -149,7 +147,6 @@ export default function PremiumRoulette() {
   
   const resetFilters = () => {
     setFilterYear("any");
-    setFilterNitro(false);
   };
   
   return (
@@ -176,7 +173,7 @@ export default function PremiumRoulette() {
                 size="sm"
                 onClick={resetFilters}
                 className="flex items-center"
-                disabled={(filterYear === "any" || !filterYear) && !filterNitro}
+                disabled={filterYear === "any" || !filterYear}
               >
                 <RefreshCw className="mr-1 h-4 w-4" />
                 Reset
@@ -205,14 +202,6 @@ export default function PremiumRoulette() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="nitro-filter"
-                  checked={filterNitro}
-                  onCheckedChange={(checked) => setFilterNitro(checked === true)}
-                />
-                <Label htmlFor="nitro-filter">Only Nitro users (with custom banner)</Label>
               </div>
             </div>
           )}

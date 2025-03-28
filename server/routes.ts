@@ -31,6 +31,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Skip deleted users
+      if (user.username.toLowerCase().includes("deleted_user")) {
+        return res.status(404).json({
+          message: "This user is no longer on Discord."
+        });
+      }
+      
       // Calculate account creation date
       const { formattedDate, accountAge } = calculateAccountCreationDetails(id);
       
@@ -138,6 +145,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ 
           message: "Selected user not found. Please try again." 
+        });
+      }
+      
+      // Skip deleted users
+      if (user.username.toLowerCase().includes("deleted_user")) {
+        return res.status(404).json({
+          message: "Selected user is no longer on Discord. Please try again."
         });
       }
       
@@ -280,6 +294,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ 
           message: "Friend not found. Please check the ID and try again." 
+        });
+      }
+      
+      // Skip deleted users
+      if (user.username.toLowerCase().includes("deleted_user")) {
+        return res.status(404).json({
+          message: "This user is no longer on Discord."
         });
       }
       
