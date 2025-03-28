@@ -1,30 +1,46 @@
 import { useQuery } from "@tanstack/react-query";
-import { Session } from "@shared/schema";
 
+// Type definitions for auth responses
+export type User = {
+  id: number;
+  discordId?: string;
+  username: string;
+  avatar: string | null;
+  lookupHistory?: string[];
+  rouletteHistory?: string[];
+  friendHistory?: string[];
+  balance?: number;
+  lastBalanceUpdate?: string | null;
+  isAdmin?: boolean;
+  accessToken?: string | null;
+  refreshToken?: string | null;
+};
+
+export type AuthResponse = {
+  isLoggedIn: boolean;
+  user?: User;
+};
+
+/**
+ * Custom hook for accessing authentication state
+ */
 export function useAuth() {
-  const { data, isLoading, error, refetch } = useQuery<Session>({
-    queryKey: ['/api/auth/session'],
+  const { data, isLoading, error, refetch } = useQuery<AuthResponse>({
+    queryKey: ["/api/auth/session"],
     queryFn: async () => {
-      const response = await fetch('/api/auth/session', {
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch authentication status');
+      const res = await fetch("/api/auth/session");
+      if (!res.ok) {
+        throw new Error("Failed to fetch auth session");
       }
-      
-      return await response.json();
+      return res.json();
     },
-    staleTime: 0, // Always fetch fresh data
-    refetchOnWindowFocus: true, // Refetch when window gains focus
-    retry: 3, // Retry 3 times if the request fails
   });
 
   return {
+    isLoggedIn: data?.isLoggedIn || false,
+    user: data?.user || null,
     isLoading,
     error,
-    isLoggedIn: data?.isLoggedIn || false,
-    user: data?.user,
-    refetch,
+    refetch
   };
 }

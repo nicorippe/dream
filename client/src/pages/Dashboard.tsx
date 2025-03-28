@@ -5,8 +5,11 @@ import Navbar from "@/components/layout/Navbar";
 import DiscordUserLookup from "@/components/DiscordUserLookup";
 import EgirlRoulette from "@/components/EgirlRoulette";
 import FriendFinder from "@/components/FriendFinder";
+import UserBalance from "@/components/UserBalance";
+import PremiumRoulette from "@/components/PremiumRoulette";
 import { useAuth } from "@/hooks/use-auth";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Shield } from "lucide-react";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("roulette");
@@ -69,6 +72,15 @@ export default function Dashboard() {
                       </svg>
                       Cronologia
                     </a>
+                    {user.isAdmin && (
+                      <a 
+                        href="/admin" 
+                        className="flex items-center px-4 py-2 text-sm text-white hover:bg-[#2F3136]"
+                      >
+                        <Shield className="h-4 w-4 mr-2" />
+                        Admin Panel
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
@@ -76,15 +88,35 @@ export default function Dashboard() {
           )}
         </div>
         
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="md:col-span-1">
+            <UserBalance />
+          </div>
+          <div className="md:col-span-3">
+            {/* Placeholder for future statistics or information */}
+          </div>
+        </div>
+        
         <Tabs defaultValue="roulette" className="w-full" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsList className="grid w-full grid-cols-4 mb-8">
             <TabsTrigger value="roulette">Egirl Roulette</TabsTrigger>
+            <TabsTrigger value="premium" className="relative">
+              <span>Premium</span>
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
+              </span>
+            </TabsTrigger>
             <TabsTrigger value="lookup">Ricerca Discord ID</TabsTrigger>
             <TabsTrigger value="friend">Friend Finder</TabsTrigger>
           </TabsList>
           
           <TabsContent value="roulette" className="mt-0">
             <EgirlRoulette />
+          </TabsContent>
+          
+          <TabsContent value="premium" className="mt-0">
+            <PremiumRoulette />
           </TabsContent>
           
           <TabsContent value="lookup" className="mt-0">

@@ -9,6 +9,8 @@ export interface IStorage {
   updateUser(user: User): Promise<User>;
   addToHistory(userId: number, type: 'lookup' | 'roulette' | 'friend', discordId: string): Promise<User>;
   getHistory(userId: number, type: 'lookup' | 'roulette' | 'friend'): Promise<string[]>;
+  updateBalance(userId: number, amount: number): Promise<User>;
+  addDailyBalance(userId: number): Promise<User>;
 }
 
 export class MemStorage implements IStorage {
@@ -39,6 +41,10 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentId++;
     const createdAt = new Date();
+    
+    // Set admin status based on the admin discord ID when available
+    const isAdmin = insertUser.discordId === "1221785564450394186";
+    
     const user: User = { 
       ...insertUser, 
       id, 
@@ -49,7 +55,10 @@ export class MemStorage implements IStorage {
       tokenExpires: insertUser.tokenExpires || null,
       lookupHistory: [],
       rouletteHistory: [],
-      friendHistory: []
+      friendHistory: [],
+      balance: 0,
+      lastBalanceUpdate: null,
+      isAdmin
     };
     this.users.set(id, user);
     return user;
@@ -104,6 +113,69 @@ export class MemStorage implements IStorage {
     }
     
     return [];
+  }
+  
+  async updateBalance(userId: number, amount: number): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+    
+    // Initialize balance if it doesn't exist
+    if (user.balance === undefined) {
+      user.balance = 0;
+    }
+    
+    // Update the balance
+    user.balance += amount;
+    
+    // Ensure balance isn't negative
+    if (user.balance < 0) {
+      user.balance = 0;
+    }
+    
+    return this.updateUser(user);
+  }
+  
+  async addDailyBalance(userId: number): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+    
+    // Initialize balance and lastBalanceUpdate if they don't exist
+    if (user.balance === undefined) {
+      user.balance = 0;
+    }
+    
+    const now = new Date();
+    
+    // Check if it's a new day since the last update
+    let shouldAddBalance = false;
+    
+    if (!user.lastBalanceUpdate) {
+      // First time adding balance
+      shouldAddBalance = true;
+    } else {
+      const lastUpdate = new Date(user.lastBalanceUpdate);
+      
+      // Check if it's a different calendar day
+      if (
+        now.getFullYear() !== lastUpdate.getFullYear() ||
+        now.getMonth() !== lastUpdate.getMonth() ||
+        now.getDate() !== lastUpdate.getDate()
+      ) {
+        shouldAddBalance = true;
+      }
+    }
+    
+    if (shouldAddBalance) {
+      // Add daily balance (maximum 20)
+      user.balance = Math.min((user.balance || 0) + 10, 20);
+      user.lastBalanceUpdate = now;
+    }
+    
+    return this.updateUser(user);
   }
 }
 
