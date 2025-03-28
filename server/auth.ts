@@ -92,7 +92,7 @@ export function setupAuth(app: Express) {
       {
         clientID: process.env.DISCORD_CLIENT_ID || "",
         clientSecret: process.env.DISCORD_CLIENT_SECRET || "",
-        callbackURL: "https://workspace.atzenineve.replit.dev/api/auth/discord/callback",
+        callbackURL: "https://nashi-hub.atzenineve.replit.app/api/auth/discord/callback",
         scope: DISCORD_SCOPES
       },
       async (accessToken, refreshToken, profile: any, done) => {
